@@ -6,6 +6,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Reflection;
 using Microsoft.Diagnostics.Tracing.Parsers;
+using Microsoft.Diagnostics.Utilities;
 using Microsoft.Win32;
 
 using KernelKeywords = Microsoft.Diagnostics.Tracing.Parsers.KernelTraceEventParser.Keywords;
@@ -25,6 +26,17 @@ namespace Microsoft.Diagnostics.Tracing
             int cStackTracingEventIds)
         {
             var properties = (EVENT_TRACE_PROPERTIES*)propertyBuff;
+
+            // Read the session name from the properties buffer.
+            var sessionName = new String((char*)(((byte*)properties) + properties->LoggerNameOffset));
+            bool isCustomSessionName = sessionName != KernelSessionName;
+
+            // On Win8+, a custom session name requires SYSTEM_LOGGER_MODE to enable kernel events.
+            if (isCustomSessionName && OperatingSystemVersion.AtLeast(62))
+            {
+                properties->LogFileMode |= TraceEventNativeMethods.EVENT_TRACE_SYSTEM_LOGGER_MODE;
+            }
+
             bool needExtensions = false;
             if ((((KernelKeywords)properties->EnableFlags) &
                 (KernelKeywords.PMCProfile | KernelKeywords.ReferenceSet
@@ -43,7 +55,7 @@ namespace Microsoft.Diagnostics.Tracing
                 if (len > maxExtensionSize)
                     throw new ArgumentOutOfRangeException("Too much ETW extension information specified.");
                 SaveExtensions(extensions, properties, extensionsOffset);
-                return StartTraceW(out TraceHandle, KernelSessionName, properties);
+                return StartTraceW(out TraceHandle, sessionName, properties);
             }
 
             LoadKernelTraceControl();

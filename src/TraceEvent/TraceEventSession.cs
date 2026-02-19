@@ -642,7 +642,7 @@ namespace Microsoft.Diagnostics.Tracing.Session
 
                 if (m_SessionName != KernelTraceEventParser.KernelSessionName)
                 {
-                    if ((flags & KernelTraceEventParser.NonOSKeywords) != 0)
+                    if ((flags & KernelTraceEventParser.NonOSKeywords) != 0 && !OperatingSystemVersion.AtLeast(62))
                     {
                         throw new NotSupportedException("Keyword specified this is only supported on the " + KernelTraceEventParser.KernelSessionName + " session.");
                     }
@@ -660,10 +660,13 @@ namespace Microsoft.Diagnostics.Tracing.Session
                         m_kernelSession = kernelSession;
                         return nestedRet;
                     }
-                    else
+                    else if ((flags & KernelTraceEventParser.NonOSKeywords) == 0)
                     {
                         systemTraceProvider = true;
                     }
+                    // On Win8+ with NonOSKeywords and a custom session name, fall through
+                    // to the ETWKernelControl path which handles extensions-based keywords
+                    // and will set EVENT_TRACE_SYSTEM_LOGGER_MODE for the custom session name.
                 }
 
                 // The Profile event requires the SeSystemProfilePrivilege to succeed, so set it.

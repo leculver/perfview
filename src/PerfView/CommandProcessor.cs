@@ -3662,7 +3662,7 @@ namespace PerfView
         }
 
         internal static string s_UserModeSessionName = "PerfViewSession";
-        internal static string s_KernelessionName = KernelTraceEventParser.KernelSessionName;
+        internal static string s_KernelessionName = "PerfViewKernelSession";
         private static string s_HeapSessionName { get { return s_UserModeSessionName + "Heap"; } }
 
         private static bool s_addedSupportDirToPath;
