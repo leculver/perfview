@@ -897,10 +897,12 @@ namespace PerfView
             {
                 ret.SecurityCheck = pdbFile =>
                 {
-                    var result = XamlMessageBox.Show(
-                        $"Found {pdbFile} on your local machine.  Do you want to use it?",
-                        "Security Check",
-                        System.Windows.MessageBoxButton.YesNo);
+                    var result = GuiApp.MainWindow.Dispatcher.Invoke(() =>
+                        XamlMessageBox.Show(
+                            GuiApp.MainWindow,
+                            $"Found {pdbFile} on your local machine.  Do you want to use it?",
+                            "Security Check",
+                            System.Windows.MessageBoxButton.YesNo));
 
                     return result == System.Windows.MessageBoxResult.Yes;
                 };
