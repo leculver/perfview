@@ -868,8 +868,11 @@ namespace Microsoft.Diagnostics.Tracing.Analysis
                             _gc.PerHeapMarkTimes.Add(data.HeapNum, new MarkInfo());
                         }
 
-                        _gc.PerHeapMarkTimes[data.HeapNum].MarkTimes[(int)data.Type] = data.TimeStampRelativeMSec;
-                        _gc.PerHeapMarkTimes[data.HeapNum].MarkPromoted[(int)data.Type] = data.Promoted;
+                        if ((uint)data.Type < (uint)MarkRootType.MarkMax)
+                        {
+                            _gc.PerHeapMarkTimes[data.HeapNum].MarkTimes[(int)data.Type] = data.TimeStampRelativeMSec;
+                            _gc.PerHeapMarkTimes[data.HeapNum].MarkPromoted[(int)data.Type] = data.Promoted;
+                        }
                     }
                 };
 
